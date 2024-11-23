@@ -14,7 +14,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.2")
+
+    implementation("org.projectlombok:lombok:1.16.10")
 
     implementation(files("external/Raylib-J-0.5.2.jar"))
 
