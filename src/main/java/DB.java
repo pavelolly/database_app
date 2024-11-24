@@ -16,6 +16,7 @@ public class DB {
 
     public static void PrintSQLExecption(SQLException e) {
         System.err.println("[SQL ERROR]: " + e.getMessage());
+        e.printStackTrace();
     }
 
     private static void PrintSQL(String sql) {
@@ -94,7 +95,7 @@ public class DB {
             ps.setString(2, department.name);
             ps.setObject(3, department.headmaster_id);
             ps.setString(4, department.url);
-            ps.setString(4, department.email);
+            ps.setString(5, department.email);
 
             ResultSet result = ExecuteQuery(ps);
             result.next();
@@ -152,7 +153,7 @@ public class DB {
     public void LocateDepartmentAtBuilding(int university_id, int department_id, String bulding_name, String head_office)
             throws SQLException
     {
-        String sql = "INSERT INTO location VALUES (?, ?, ?)";
+        String sql = "INSERT INTO location VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, university_id);
             ps.setInt(2, department_id);
@@ -246,17 +247,42 @@ public class DB {
     }
 
     public int AddEmployee(int university_id, DBObject.Employee employee) throws SQLException {
-        String sql = "INSERT INTO employee VALUES (?, DEFAULT, ?, ?, ?) RETURNING id";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, university_id);
-            ps.setString(2, employee.first_name);
-            ps.setString(3, employee.last_name);
-            ps.setString(4, employee.patronymic);
-
-            ResultSet result = ExecuteQuery(ps);
-            result.next();
-            return result.getInt(1);
+        String sql_get_id = "SELECT next_employee_id FROM university WHERE id = " + university_id;
+        int employee_id;
+        try (Statement s = connection.createStatement()) {
+            ResultSet rs = ExecuteQuery(s, sql_get_id);
+            rs.next();
+            employee_id = rs.getInt(1);
         }
+
+        try {
+            connection.setAutoCommit(false);
+
+            String sql1 = "INSERT INTO employee VALUES (?, ?, ?, ?, ?)";
+            String sql2 = "UPDATE university SET next_employee_id = next_employee_id + 1 WHERE id = " + university_id;
+
+            try (PreparedStatement ps = connection.prepareStatement(sql1);
+                 Statement s = connection.createStatement())
+            {
+                ps.setInt(1, university_id);
+                ps.setInt(2, employee_id);
+                ps.setString(3, employee.first_name);
+                ps.setString(4, employee.last_name);
+                ps.setString(5, employee.patronymic);
+
+                ExecuteUpdate(ps);
+                ExecuteUpdate(s, sql2);
+            }
+
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
+
+        return employee_id;
     }
 
     public void AddJob(int university_id, int department_id, int employee_id, String job) throws SQLException {
@@ -271,7 +297,7 @@ public class DB {
         }
     }
 
-    public void AddSubjectToEmployee(int university_id, int employee_id, String subject) throws SQLException {
+    public void AddSubjectForEmployee(int university_id, int employee_id, String subject) throws SQLException {
         try {
             connection.setAutoCommit(false);
             String sql1 = "INSERT INTO subject VALUES (?) ON CONFLICT ON CONSTRAINT subject_pkey DO NOTHING";

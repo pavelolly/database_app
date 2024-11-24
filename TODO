@@ -1,3 +1,16 @@
+--- Code:
 [-] abstract away preperation of statement
 [-] abstract away transaction
 [-] hide url, username and password
+[-] get rid of DBObject
+
+--- Add interface
+[-] Separate addition of specialty and specialty for university
+[-] Separate addition of subjects and professors and hours
+[-] Merge some additions into nicer interface (e.g. sperated above)
+
+--- Select interface
+
+--- Delete interface
+
+--- Update interface
