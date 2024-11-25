@@ -43,11 +43,11 @@ public class Main {
                 "Бакалавриат");
 
         db.AddSpecialtyForFaculty(uni_id, pmk_id, specialty,
-                new DBObject.SpecailtyAtUniversity("Очная", 36).
+                new DBObject.SpecialtyAtUniversity("Очная", 36).
                         setNumberOfFreePlaces(140).
                         setNumberOfPaidPlaces(20));
         db.AddSpecialtyForFaculty(uni_id, pmk_id, specialty,
-                new DBObject.SpecailtyAtUniversity("Заочная", 42).
+                new DBObject.SpecialtyAtUniversity("Заочная", 42).
                         setNumberOfFreePlaces(30).
                         setNumberOfPaidPlaces(10));
 
@@ -84,11 +84,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        try {
-            DB db = new DB();
+        try (var db = new DB()) {
 
-            // db.TruncateEverything();
-            // AddTVGU(db);
+            db.TruncateEverything();
+            AddTVGU(db);
+
         } catch (SQLException e) {
             DB.PrintSQLExecption(e);
         }

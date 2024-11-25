@@ -1,5 +1,5 @@
 --- Code:
-[-] abstract away preperation of statement
+[+] abstract away preperation of statement
 [-] abstract away transaction
 [-] hide url, username and password
 [-] get rid of DBObject

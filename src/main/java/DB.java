@@ -1,8 +1,7 @@
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.Callable;
 
-public class DB {
+public class DB implements AutoCloseable {
     private final Connection connection;
     private final static String DB_URL = "jdbc:postgresql://localhost:5432/universities";
     private final static String USER = "postgres";
@@ -10,6 +9,14 @@ public class DB {
 
     public DB() throws SQLException {
         connection = DriverManager.getConnection(DB_URL, USER, PASS);
+    }
+
+    public void close() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            PrintSQLExecption(e);
+        }
     }
 
     // ------------- Utils -------------
@@ -57,18 +64,81 @@ public class DB {
         return ps.executeQuery();
     }
 
+    private PreparedStatement PrepareStatement(String sql, Object... params) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        int param_idx = 1;
+        for (Object param : params) {
+            switch (param) {
+                case DBObject.University university -> {
+                    ps.setString(param_idx, university.name);
+                    ps.setString(param_idx + 1, university.url);
+                    ps.setBoolean(param_idx + 2, university.state);
+                    ps.setBoolean(param_idx + 3, university.campus);
+                    ps.setBoolean(param_idx + 4, university.military);
+                    param_idx += 5;
+                }
+                case DBObject.Building building -> {
+                    ps.setString(param_idx, building.name);
+                    ps.setString(param_idx + 1, building.address);
+                    param_idx += 2;
+                }
+                case DBObject.Department department -> {
+                    ps.setString(param_idx, department.name);
+                    ps.setObject(param_idx + 1, department.headmaster_id);
+                    ps.setString(param_idx + 2, department.url);
+                    ps.setString(param_idx + 3, department.email);
+                    param_idx += 4;
+                }
+                case DBObject.Specialty specialty -> {
+                    ps.setString(param_idx, specialty.code);
+                    ps.setString(param_idx + 1, specialty.name);
+                    ps.setString(param_idx + 2, specialty.qualification);
+                    param_idx += 3;
+                }
+                case DBObject.SpecialtyAtUniversity specailty_at_university -> {
+                    ps.setString(param_idx, specailty_at_university.study_form);
+                    ps.setInt(param_idx + 1, specailty_at_university.month_to_study);
+                    ps.setInt(param_idx + 2, specailty_at_university.number_of_free_places);
+                    ps.setInt(param_idx + 3, specailty_at_university.number_of_paid_places);
+                    param_idx += 4;
+                }
+                case DBObject.Employee employee -> {
+                    ps.setString(param_idx, employee.first_name);
+                    ps.setString(param_idx + 1, employee.last_name);
+                    ps.setString(param_idx + 2, employee.patronymic);
+                    param_idx += 3;
+                }
+                case null, default -> {
+                    ps.setObject(param_idx, param);
+                    param_idx += 1;
+                }
+            }
+        }
+        return ps;
+    }
+
+    void RunAsTransaction(Callable<Void> transaction) throws SQLException {
+        try {
+            connection.setAutoCommit(false);
+            transaction.call();
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } catch (Exception e) {
+            System.err.println("[ERROR]: " + e.getMessage());
+            System.exit(1);
+        } finally {
+            connection.setAutoCommit(true);
+        }
+    }
+
     // ------------- Insertions -------------
 
     public int AddUniversity(DBObject.University university) throws SQLException {
         String sql = "INSERT INTO university VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, university.name);
-            ps.setString(2, university.url);
-            ps.setBoolean(3, university.state);
-            ps.setBoolean(4, university.campus);
-            ps.setBoolean(5, university.military);
-
+        try (PreparedStatement ps = PrepareStatement(sql, university)) {
             ResultSet result = ExecuteQuery(ps);
             result.next();
             return result.getInt(1);
@@ -78,11 +148,7 @@ public class DB {
     public void AddBuilding(int university_id, DBObject.Building building) throws SQLException {
         String sql = "INSERT INTO building VALUES (?, ?, ?)";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, university_id);
-            ps.setString(2, building.name);
-            ps.setString(3, building.address);
-
+        try (PreparedStatement ps = PrepareStatement(sql, university_id, building)) {
             ExecuteUpdate(ps);
         }
     }
@@ -90,13 +156,7 @@ public class DB {
     public int AddDepartment(int university_id, DBObject.Department department) throws SQLException {
         String sql = "INSERT INTO department VALUES (?, DEFAULT, ?, ?, ?, ?) RETURNING id";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, university_id);
-            ps.setString(2, department.name);
-            ps.setObject(3, department.headmaster_id);
-            ps.setString(4, department.url);
-            ps.setString(5, department.email);
-
+        try (PreparedStatement ps = PrepareStatement(sql, university_id, department)) {
             ResultSet result = ExecuteQuery(ps);
             result.next();
             return result.getInt(1);
@@ -110,10 +170,7 @@ public class DB {
             int department_id = AddDepartment(university_id, department);
 
             String sql = "INSERT INTO faculty VALUES (?, ?)";
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setInt(1, university_id);
-                ps.setInt(2, department_id);
-
+            try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id)) {
                 ExecuteUpdate(ps);
             }
             connection.commit();
@@ -133,11 +190,7 @@ public class DB {
             int department_id = AddDepartment(university_id, department);
 
             String sql = "INSERT INTO cathedra VALUES (?, ?, ?)";
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setInt(1, university_id);
-                ps.setInt(2, department_id);
-                ps.setInt(3, faculty_id);
-
+            try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id, faculty_id)) {
                 ExecuteUpdate(ps);
             }
             connection.commit();
@@ -154,12 +207,7 @@ public class DB {
             throws SQLException
     {
         String sql = "INSERT INTO location VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, university_id);
-            ps.setInt(2, department_id);
-            ps.setString(3, bulding_name);
-            ps.setString(4, head_office);
-
+        try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id, bulding_name, head_office)) {
             ExecuteUpdate(ps);
         }
     }
@@ -173,31 +221,19 @@ public class DB {
     public void AddSpecialtyForFaculty(int university_id,
                                        int faculty_id,
                                        DBObject.Specialty specialty,
-                                       DBObject.SpecailtyAtUniversity specailty_at_university)
+                                       DBObject.SpecialtyAtUniversity specailty_at_university)
             throws SQLException
     {
         try {
             connection.setAutoCommit(false);
 
             String sql1 = "INSERT INTO specialty VALUES (?, ?, ?) ON CONFLICT ON CONSTRAINT specialty_pkey DO NOTHING";
-            try (PreparedStatement ps = connection.prepareStatement(sql1)) {
-                ps.setString(1, specialty.code);
-                ps.setString(2, specialty.name);
-                ps.setString(3, specialty.qualification);
-
+            try (PreparedStatement ps = PrepareStatement(sql1, specialty)) {
                 ExecuteUpdate(ps);
             }
 
             String sql2 = "INSERT INTO specialty_at_university VALUES (?, ?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement ps = connection.prepareStatement(sql2)) {
-                ps.setInt(1, university_id);
-                ps.setInt(2, faculty_id);
-                ps.setString(3, specialty.code);
-                ps.setString(4, specailty_at_university.study_form);
-                ps.setInt(5, specailty_at_university.month_to_study);
-                ps.setInt(6, specailty_at_university.number_of_free_places);
-                ps.setInt(7, specailty_at_university.number_of_paid_places);
-
+            try (PreparedStatement ps = PrepareStatement(sql2, university_id, faculty_id, specialty.code, specailty_at_university)) {
                 ExecuteUpdate(ps);
             }
 
@@ -219,22 +255,12 @@ public class DB {
             connection.setAutoCommit(false);
 
             String sql1 = "INSERT INTO subject VALUES (?) ON CONFLICT ON CONSTRAINT subject_pkey DO NOTHING";
-            try (PreparedStatement ps = connection.prepareStatement(sql1)) {
-                ps.setString(1, subject);
-
-                ExecuteUpdate(ps);
-            }
-
             String sql2 = "INSERT INTO hours VALUES (?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement ps = connection.prepareStatement(sql2)) {
-                ps.setInt(1, university_id);
-                ps.setInt(2, faculty_id);
-                ps.setString(3, specialty_code);
-                ps.setString(4, study_form);
-                ps.setString(5, subject);
-                ps.setInt(6, number_of_hours);
-
-                ExecuteUpdate(ps);
+            try (PreparedStatement ps1 = PrepareStatement(sql1, subject);
+                 PreparedStatement ps2 = PrepareStatement(sql2,
+                         university_id, faculty_id, specialty_code, study_form, subject, number_of_hours)) {
+                ExecuteUpdate(ps1);
+                ExecuteUpdate(ps2);
             }
 
             connection.commit();
@@ -261,15 +287,9 @@ public class DB {
             String sql1 = "INSERT INTO employee VALUES (?, ?, ?, ?, ?)";
             String sql2 = "UPDATE university SET next_employee_id = next_employee_id + 1 WHERE id = " + university_id;
 
-            try (PreparedStatement ps = connection.prepareStatement(sql1);
+            try (PreparedStatement ps = PrepareStatement(sql1, university_id, employee_id, employee);
                  Statement s = connection.createStatement())
             {
-                ps.setInt(1, university_id);
-                ps.setInt(2, employee_id);
-                ps.setString(3, employee.first_name);
-                ps.setString(4, employee.last_name);
-                ps.setString(5, employee.patronymic);
-
                 ExecuteUpdate(ps);
                 ExecuteUpdate(s, sql2);
             }
@@ -287,12 +307,7 @@ public class DB {
 
     public void AddJob(int university_id, int department_id, int employee_id, String job) throws SQLException {
         String sql = "INSERT INTO job VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, university_id);
-            ps.setInt(2, department_id);
-            ps.setInt(3, employee_id);
-            ps.setString(4, job);
-
+        try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id, employee_id, job)) {
             ExecuteUpdate(ps);
         }
     }
@@ -301,18 +316,12 @@ public class DB {
         try {
             connection.setAutoCommit(false);
             String sql1 = "INSERT INTO subject VALUES (?) ON CONFLICT ON CONSTRAINT subject_pkey DO NOTHING";
-            try (PreparedStatement ps = connection.prepareStatement(sql1)) {
-                ps.setString(1, subject);
-
+            try (PreparedStatement ps = PrepareStatement(sql1, subject)) {
                 ExecuteUpdate(ps);
             }
 
             String sql2 = "INSERT INTO professor VALUES (?, ?, ?)";
-            try (PreparedStatement ps = connection.prepareStatement(sql2)) {
-                ps.setInt(1, university_id);
-                ps.setInt(2, employee_id);
-                ps.setString(3, subject);
-
+            try (PreparedStatement ps = PrepareStatement(sql2, university_id, employee_id, subject);) {
                 ExecuteUpdate(ps);
             }
 

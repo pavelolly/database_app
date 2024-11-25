@@ -1,9 +1,4 @@
 import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /*
  *  Tables from database
@@ -116,23 +111,23 @@ public abstract class DBObject {
     }
 
     @ToString
-    public static class SpecailtyAtUniversity extends DBObject {
+    public static class SpecialtyAtUniversity extends DBObject {
         public String study_form;
         public Integer month_to_study;
         public Integer number_of_free_places = 0;
         public Integer number_of_paid_places = 0;
 
-        public SpecailtyAtUniversity(String study_form, Integer month_to_study) {
+        public SpecialtyAtUniversity(String study_form, Integer month_to_study) {
             this.study_form = study_form;
             this.month_to_study = month_to_study;
         }
 
-        public SpecailtyAtUniversity setNumberOfFreePlaces(int number_of_free_places) {
+        public SpecialtyAtUniversity setNumberOfFreePlaces(int number_of_free_places) {
             this.number_of_free_places = number_of_free_places;
             return this;
         }
 
-        public SpecailtyAtUniversity setNumberOfPaidPlaces(int number_of_paid_places) {
+        public SpecialtyAtUniversity setNumberOfPaidPlaces(int number_of_paid_places) {
             this.number_of_paid_places = number_of_paid_places;
             return this;
         }
