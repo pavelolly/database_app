@@ -5,7 +5,7 @@ public class Main {
         System.out.println("[INFO] " + msg);
     }
 
-    private static void AddTVGU(DB db) throws SQLException {
+    private static void AddTverSU(DB db) throws SQLException {
         int uni_id = db.AddUniversity(new DBObject.University("Тверской Государственный Университет").
                 setUrl("https://tversu.ru").
                 setCampus(true).setState(true).setMilitary(false));
@@ -87,7 +87,7 @@ public class Main {
         try (var db = new DB()) {
 
             db.TruncateEverything();
-            AddTVGU(db);
+            AddTverSU(db);
 
         } catch (SQLException e) {
             DB.PrintSQLExecption(e);

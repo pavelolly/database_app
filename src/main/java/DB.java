@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 public class DB implements AutoCloseable {
     private final Connection connection;
@@ -117,17 +118,21 @@ public class DB implements AutoCloseable {
         return ps;
     }
 
-    void RunAsTransaction(Callable<Void> transaction) throws SQLException {
+    private <T> T RunAsTransaction(Callable<T> transaction) throws SQLException {
         try {
             connection.setAutoCommit(false);
-            transaction.call();
+            T result = transaction.call();
             connection.commit();
+            return result;
         } catch (SQLException e) {
             connection.rollback();
             throw e;
         } catch (Exception e) {
             System.err.println("[ERROR]: " + e.getMessage());
             System.exit(1);
+
+            // unreachable
+            return null;
         } finally {
             connection.setAutoCommit(true);
         }
@@ -164,43 +169,27 @@ public class DB implements AutoCloseable {
     }
 
     public int AddFaculty(int university_id, DBObject.Department department) throws SQLException {
-        try {
-            connection.setAutoCommit(false);
-
+        return RunAsTransaction(() -> {
             int department_id = AddDepartment(university_id, department);
 
             String sql = "INSERT INTO faculty VALUES (?, ?)";
             try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id)) {
                 ExecuteUpdate(ps);
             }
-            connection.commit();
             return department_id;
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+        });
     }
 
     public int AddCathedra(int university_id, DBObject.Department department, int faculty_id) throws SQLException {
-        try {
-            connection.setAutoCommit(false);
-
+        return RunAsTransaction(() -> {
             int department_id = AddDepartment(university_id, department);
 
             String sql = "INSERT INTO cathedra VALUES (?, ?, ?)";
             try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id, faculty_id)) {
                 ExecuteUpdate(ps);
             }
-            connection.commit();
             return department_id;
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+        });
     }
 
     public void LocateDepartmentAtBuilding(int university_id, int department_id, String bulding_name, String head_office)
@@ -224,26 +213,16 @@ public class DB implements AutoCloseable {
                                        DBObject.SpecialtyAtUniversity specailty_at_university)
             throws SQLException
     {
-        try {
-            connection.setAutoCommit(false);
-
+        RunAsTransaction(() -> {
             String sql1 = "INSERT INTO specialty VALUES (?, ?, ?) ON CONFLICT ON CONSTRAINT specialty_pkey DO NOTHING";
-            try (PreparedStatement ps = PrepareStatement(sql1, specialty)) {
-                ExecuteUpdate(ps);
-            }
-
             String sql2 = "INSERT INTO specialty_at_university VALUES (?, ?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement ps = PrepareStatement(sql2, university_id, faculty_id, specialty.code, specailty_at_university)) {
-                ExecuteUpdate(ps);
+            try (PreparedStatement ps1 = PrepareStatement(sql1, specialty);
+                 PreparedStatement ps2 = PrepareStatement(sql2, university_id, faculty_id, specialty.code, specailty_at_university)) {
+                ExecuteUpdate(ps1);
+                ExecuteUpdate(ps2);
             }
-
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+            return null;
+        });
     }
 
     public void AddSubjectForSpecialty(int university_id, int faculty_id,
@@ -251,9 +230,7 @@ public class DB implements AutoCloseable {
                                        int number_of_hours)
             throws SQLException
     {
-        try {
-            connection.setAutoCommit(false);
-
+        RunAsTransaction(() -> {
             String sql1 = "INSERT INTO subject VALUES (?) ON CONFLICT ON CONSTRAINT subject_pkey DO NOTHING";
             String sql2 = "INSERT INTO hours VALUES (?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps1 = PrepareStatement(sql1, subject);
@@ -262,14 +239,8 @@ public class DB implements AutoCloseable {
                 ExecuteUpdate(ps1);
                 ExecuteUpdate(ps2);
             }
-
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+            return null;
+        });
     }
 
     public int AddEmployee(int university_id, DBObject.Employee employee) throws SQLException {
@@ -281,26 +252,17 @@ public class DB implements AutoCloseable {
             employee_id = rs.getInt(1);
         }
 
-        try {
-            connection.setAutoCommit(false);
-
+        RunAsTransaction(() -> {
             String sql1 = "INSERT INTO employee VALUES (?, ?, ?, ?, ?)";
             String sql2 = "UPDATE university SET next_employee_id = next_employee_id + 1 WHERE id = " + university_id;
-
             try (PreparedStatement ps = PrepareStatement(sql1, university_id, employee_id, employee);
                  Statement s = connection.createStatement())
             {
                 ExecuteUpdate(ps);
                 ExecuteUpdate(s, sql2);
             }
-
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+            return null;
+        });
 
         return employee_id;
     }
@@ -313,8 +275,7 @@ public class DB implements AutoCloseable {
     }
 
     public void AddSubjectForEmployee(int university_id, int employee_id, String subject) throws SQLException {
-        try {
-            connection.setAutoCommit(false);
+        RunAsTransaction(() -> {
             String sql1 = "INSERT INTO subject VALUES (?) ON CONFLICT ON CONSTRAINT subject_pkey DO NOTHING";
             try (PreparedStatement ps = PrepareStatement(sql1, subject)) {
                 ExecuteUpdate(ps);
@@ -324,14 +285,8 @@ public class DB implements AutoCloseable {
             try (PreparedStatement ps = PrepareStatement(sql2, university_id, employee_id, subject);) {
                 ExecuteUpdate(ps);
             }
-
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+            return null;
+        });
     }
 
 
@@ -339,28 +294,21 @@ public class DB implements AutoCloseable {
 
     int GetDepartmentId(int university_id, String name) throws SQLException {
         String sql = "SELECT id FROM department WHERE university_id = ? AND name = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, university_id);
-            ps.setString(2, name);
-
-            return ps.executeQuery().getInt("id");
+        try (PreparedStatement ps = PrepareStatement(sql, university_id, name)) {
+            return ExecuteQuery(ps).getInt("id");
         }
     }
 
     // ------------- Deletions -------------
 
     public void TruncateEverything() throws SQLException {
-        connection.setAutoCommit(false);
-        try (Statement s = connection.createStatement()) {
-            ExecuteUpdate(s, "TRUNCATE TABLE university CASCADE");
-            ExecuteUpdate(s, "TRUNCATE TABLE subject CASCADE");
-            ExecuteUpdate(s, "TRUNCATE TABLE specialty CASCADE");
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+        RunAsTransaction(() -> {
+            try (Statement s = connection.createStatement()) {
+                ExecuteUpdate(s, "TRUNCATE TABLE university CASCADE");
+                ExecuteUpdate(s, "TRUNCATE TABLE subject CASCADE");
+                ExecuteUpdate(s, "TRUNCATE TABLE specialty CASCADE");
+            }
+            return null;
+        });
     }
 }
