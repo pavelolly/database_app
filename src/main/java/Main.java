@@ -7,8 +7,8 @@ public class Main {
 
     private static void AddTverSU(DataBase db) throws SQLException {
         int uni_id = db.AddUniversity(new DataBase.University("Тверской Государственный Университет").
-                setUrl("https://tversu.ru").
-                setCampus(true).setState(true).setMilitary(false));
+                Url("https://tversu.ru").
+                CampusFlag(true).StateFlag(true).MilitaryFlag(false));
 
         PrintInfo("New added university has id: " + uni_id);
 
@@ -43,13 +43,9 @@ public class Main {
                 "Бакалавриат");
 
         db.AddSpecialtyForFaculty(uni_id, pmk_id, specialty,
-                new DataBase.SpecialtyAtUniversity("Очная", 36).
-                        setNumberOfFreePlaces(140).
-                        setNumberOfPaidPlaces(20));
+                new DataBase.SpecialtyAtUniversity("Очная", 36, 140, 20));
         db.AddSpecialtyForFaculty(uni_id, pmk_id, specialty,
-                new DataBase.SpecialtyAtUniversity("Заочная", 42).
-                        setNumberOfFreePlaces(30).
-                        setNumberOfPaidPlaces(10));
+                new DataBase.SpecialtyAtUniversity("Заочная", 42, 30, 10));
 
         db.AddSubjectForSpecialty(uni_id, pmk_id, "01.03.02", "Очная", "Алгебра", 72);
         db.AddSubjectForSpecialty(uni_id, pmk_id, "01.03.02", "Заочная", "Алгебра", 64);
@@ -63,10 +59,10 @@ public class Main {
         db.AddSubjectForSpecialty(uni_id, pmk_id, "01.03.02", "Очная", "Математическая статистика", 72);
         db.AddSubjectForSpecialty(uni_id, pmk_id, "01.03.02", "Заочная", "Математическая статистика", 64);
 
-        int employee_id1 = db.AddEmployee(uni_id, new DataBase.Employee("Оксана").setLastName("Сидорова").setPatronymic("Игоревна"));
-        int employee_id2 = db.AddEmployee(uni_id, new DataBase.Employee("Алексей").setLastName("Васильев").setPatronymic("Анатольевич"));
-        int employee_id3 = db.AddEmployee(uni_id, new DataBase.Employee("Иван").setLastName("Соловьёв"));
-        int employee_id4 = db.AddEmployee(uni_id, new DataBase.Employee("Сергей").setLastName("Дудаков").setPatronymic("Михайлович"));
+        int employee_id1 = db.AddEmployee(uni_id, new DataBase.Employee("Оксана").LastName("Сидорова").Patronymic("Игоревна"));
+        int employee_id2 = db.AddEmployee(uni_id, new DataBase.Employee("Алексей").LastName("Васильев").Patronymic("Анатольевич"));
+        int employee_id3 = db.AddEmployee(uni_id, new DataBase.Employee("Иван").LastName("Соловьёв"));
+        int employee_id4 = db.AddEmployee(uni_id, new DataBase.Employee("Сергей").LastName("Дудаков").Patronymic("Михайлович"));
         int employee_id5 = db.AddEmployee(uni_id, new DataBase.Employee("Ректор"));
 
         db.AddJob(uni_id, system_alalysis_id, employee_id1, "Доцент каферды математической статистики и систнмного анализа");

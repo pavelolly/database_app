@@ -29,30 +29,30 @@ public class DataBase implements AutoCloseable {
     public static class University {
         public String name;
         public String url;
-        public Boolean state = false;
-        public Boolean campus = false;
+        public Boolean state    = false;
+        public Boolean campus   = false;
         public Boolean military = false;
 
         public University(String name) {
             this.name = name;
         }
 
-        public University setUrl(String url) {
+        public University Url(String url) {
             this.url = url;
             return this;
         }
 
-        public University setState(boolean state) {
+        public University StateFlag(boolean state) {
             this.state = state;
             return this;
         }
 
-        public University setCampus(boolean campus) {
+        public University CampusFlag(boolean campus) {
             this.campus = campus;
             return this;
         }
 
-        public University setMilitary(boolean military) {
+        public University MilitaryFlag(boolean military) {
             this.military = military;
             return this;
         }
@@ -80,17 +80,17 @@ public class DataBase implements AutoCloseable {
             this.name = name;
         }
 
-        public Department setHeadmasterId(int headmaster_id) {
+        public Department HeadmasterId(int headmaster_id) {
             this.headmaster_id = headmaster_id;
             return this;
         }
 
-        public Department setUrl(String url) {
+        public Department Url(String url) {
             this.url = url;
             return this;
         }
 
-        public Department setEmail(String email) {
+        public Department Email(String email) {
             this.email = email;
             return this;
         }
@@ -106,12 +106,12 @@ public class DataBase implements AutoCloseable {
             this.first_name = first_name;
         }
 
-        public Employee setLastName(String last_name) {
+        public Employee LastName(String last_name) {
             this.last_name = last_name;
             return this;
         }
 
-        public Employee setPatronymic(String patronymic) {
+        public Employee Patronymic(String patronymic) {
             this.patronymic = patronymic;
             return this;
         }
@@ -134,22 +134,14 @@ public class DataBase implements AutoCloseable {
     public static class SpecialtyAtUniversity {
         public String study_form;
         public Integer month_to_study;
-        public Integer number_of_free_places = 0;
-        public Integer number_of_paid_places = 0;
+        public Integer free_places;
+        public Integer paid_places;
 
-        public SpecialtyAtUniversity(String study_form, Integer month_to_study) {
+        public SpecialtyAtUniversity(String study_form, Integer month_to_study, int free_places, int paid_places) {
             this.study_form = study_form;
             this.month_to_study = month_to_study;
-        }
-
-        public SpecialtyAtUniversity setNumberOfFreePlaces(int number_of_free_places) {
-            this.number_of_free_places = number_of_free_places;
-            return this;
-        }
-
-        public SpecialtyAtUniversity setNumberOfPaidPlaces(int number_of_paid_places) {
-            this.number_of_paid_places = number_of_paid_places;
-            return this;
+            this.free_places = free_places;
+            this.paid_places = paid_places;
         }
     }
 
@@ -232,8 +224,8 @@ public class DataBase implements AutoCloseable {
                 case SpecialtyAtUniversity specailty_at_university -> {
                     ps.setString(param_idx, specailty_at_university.study_form);
                     ps.setInt(param_idx + 1, specailty_at_university.month_to_study);
-                    ps.setInt(param_idx + 2, specailty_at_university.number_of_free_places);
-                    ps.setInt(param_idx + 3, specailty_at_university.number_of_paid_places);
+                    ps.setInt(param_idx + 2, specailty_at_university.free_places);
+                    ps.setInt(param_idx + 3, specailty_at_university.paid_places);
                     param_idx += 4;
                 }
                 case Employee employee -> {
@@ -415,7 +407,7 @@ public class DataBase implements AutoCloseable {
             }
 
             String sql2 = "INSERT INTO professor VALUES (?, ?, ?)";
-            try (PreparedStatement ps = PrepareStatement(sql2, university_id, employee_id, subject);) {
+            try (PreparedStatement ps = PrepareStatement(sql2, university_id, employee_id, subject)) {
                 ExecuteUpdate(ps);
             }
             return null;
