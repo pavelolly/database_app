@@ -20,7 +20,7 @@ dependencies {
 
     implementation(files("external/Raylib-J-0.5.2.jar"))
 
-    // implementation("org.lwjgl:lwjgl")
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
 }
 
 tasks.test {

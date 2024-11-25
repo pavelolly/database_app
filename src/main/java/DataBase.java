@@ -1,14 +1,17 @@
 import java.sql.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
-public class DB implements AutoCloseable {
+import io.github.cdimascio.dotenv.Dotenv;
+import lombok.ToString;
+
+public class DataBase implements AutoCloseable {
     private final Connection connection;
-    private final static String DB_URL = "jdbc:postgresql://localhost:5432/universities";
-    private final static String USER = "postgres";
-    private final static String PASS = "S3ptAnd69postgres";
 
-    public DB() throws SQLException {
+    public DataBase() throws SQLException {
+        Dotenv dotenv = Dotenv.load();
+        String DB_URL = dotenv.get("DB_URL");
+        String USER   = dotenv.get("USER");
+        String PASS   = dotenv.get("PASS");
         connection = DriverManager.getConnection(DB_URL, USER, PASS);
     }
 
@@ -20,19 +23,149 @@ public class DB implements AutoCloseable {
         }
     }
 
+    // ------------- Objects -------------
+
+    @ToString
+    public static class University {
+        public String name;
+        public String url;
+        public Boolean state = false;
+        public Boolean campus = false;
+        public Boolean military = false;
+
+        public University(String name) {
+            this.name = name;
+        }
+
+        public University setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public University setState(boolean state) {
+            this.state = state;
+            return this;
+        }
+
+        public University setCampus(boolean campus) {
+            this.campus = campus;
+            return this;
+        }
+
+        public University setMilitary(boolean military) {
+            this.military = military;
+            return this;
+        }
+    }
+
+    @ToString
+    public static class Building {
+        public String name;
+        public String address;
+
+        public Building(String name, String address) {
+            this.name = name;
+            this.address = address;
+        }
+    }
+
+    @ToString
+    public static class Department {
+        public String name;
+        public Integer headmaster_id;
+        public String url;
+        public String email;
+
+        public Department(String name) {
+            this.name = name;
+        }
+
+        public Department setHeadmasterId(int headmaster_id) {
+            this.headmaster_id = headmaster_id;
+            return this;
+        }
+
+        public Department setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public Department setEmail(String email) {
+            this.email = email;
+            return this;
+        }
+    }
+
+    @ToString
+    public static class Employee {
+        public String first_name;
+        public String last_name;
+        public String patronymic;
+
+        public Employee(String first_name) {
+            this.first_name = first_name;
+        }
+
+        public Employee setLastName(String last_name) {
+            this.last_name = last_name;
+            return this;
+        }
+
+        public Employee setPatronymic(String patronymic) {
+            this.patronymic = patronymic;
+            return this;
+        }
+    }
+
+    @ToString
+    public static class Specialty {
+        public String code;
+        public String name;
+        public String qualification;
+
+        public Specialty(String code, String name, String qualification) {
+            this.code = code;
+            this.name = name;
+            this.qualification = qualification;
+        }
+    }
+
+    @ToString
+    public static class SpecialtyAtUniversity {
+        public String study_form;
+        public Integer month_to_study;
+        public Integer number_of_free_places = 0;
+        public Integer number_of_paid_places = 0;
+
+        public SpecialtyAtUniversity(String study_form, Integer month_to_study) {
+            this.study_form = study_form;
+            this.month_to_study = month_to_study;
+        }
+
+        public SpecialtyAtUniversity setNumberOfFreePlaces(int number_of_free_places) {
+            this.number_of_free_places = number_of_free_places;
+            return this;
+        }
+
+        public SpecialtyAtUniversity setNumberOfPaidPlaces(int number_of_paid_places) {
+            this.number_of_paid_places = number_of_paid_places;
+            return this;
+        }
+    }
+
     // ------------- Utils -------------
 
     public static void PrintSQLExecption(SQLException e) {
-        System.err.println("[SQL ERROR]: " + e.getMessage());
+        System.err.println("[SQL ERROR] " + e.getMessage());
         e.printStackTrace();
     }
 
     private static void PrintSQL(String sql) {
-        System.out.println("[STATEMENT]: " + sql + ";");
+        System.out.println("[STATEMENT] " + sql + ";");
     }
 
     private static void PrintSQL(PreparedStatement ps) {
-        System.out.println("[STATEMENT]: " + ps + ";");
+        System.out.println("[STATEMENT] " + ps + ";");
     }
 
     private boolean Execute(Statement s, String sql) throws SQLException {
@@ -70,7 +203,7 @@ public class DB implements AutoCloseable {
         int param_idx = 1;
         for (Object param : params) {
             switch (param) {
-                case DBObject.University university -> {
+                case University university -> {
                     ps.setString(param_idx, university.name);
                     ps.setString(param_idx + 1, university.url);
                     ps.setBoolean(param_idx + 2, university.state);
@@ -78,32 +211,32 @@ public class DB implements AutoCloseable {
                     ps.setBoolean(param_idx + 4, university.military);
                     param_idx += 5;
                 }
-                case DBObject.Building building -> {
+                case Building building -> {
                     ps.setString(param_idx, building.name);
                     ps.setString(param_idx + 1, building.address);
                     param_idx += 2;
                 }
-                case DBObject.Department department -> {
+                case Department department -> {
                     ps.setString(param_idx, department.name);
                     ps.setObject(param_idx + 1, department.headmaster_id);
                     ps.setString(param_idx + 2, department.url);
                     ps.setString(param_idx + 3, department.email);
                     param_idx += 4;
                 }
-                case DBObject.Specialty specialty -> {
+                case Specialty specialty -> {
                     ps.setString(param_idx, specialty.code);
                     ps.setString(param_idx + 1, specialty.name);
                     ps.setString(param_idx + 2, specialty.qualification);
                     param_idx += 3;
                 }
-                case DBObject.SpecialtyAtUniversity specailty_at_university -> {
+                case SpecialtyAtUniversity specailty_at_university -> {
                     ps.setString(param_idx, specailty_at_university.study_form);
                     ps.setInt(param_idx + 1, specailty_at_university.month_to_study);
                     ps.setInt(param_idx + 2, specailty_at_university.number_of_free_places);
                     ps.setInt(param_idx + 3, specailty_at_university.number_of_paid_places);
                     param_idx += 4;
                 }
-                case DBObject.Employee employee -> {
+                case Employee employee -> {
                     ps.setString(param_idx, employee.first_name);
                     ps.setString(param_idx + 1, employee.last_name);
                     ps.setString(param_idx + 2, employee.patronymic);
@@ -128,7 +261,7 @@ public class DB implements AutoCloseable {
             connection.rollback();
             throw e;
         } catch (Exception e) {
-            System.err.println("[ERROR]: " + e.getMessage());
+            System.err.println("[ERROR] " + e.getMessage());
             System.exit(1);
 
             // unreachable
@@ -140,7 +273,7 @@ public class DB implements AutoCloseable {
 
     // ------------- Insertions -------------
 
-    public int AddUniversity(DBObject.University university) throws SQLException {
+    public int AddUniversity(University university) throws SQLException {
         String sql = "INSERT INTO university VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING id";
 
         try (PreparedStatement ps = PrepareStatement(sql, university)) {
@@ -150,7 +283,7 @@ public class DB implements AutoCloseable {
         }
     }
 
-    public void AddBuilding(int university_id, DBObject.Building building) throws SQLException {
+    public void AddBuilding(int university_id, Building building) throws SQLException {
         String sql = "INSERT INTO building VALUES (?, ?, ?)";
 
         try (PreparedStatement ps = PrepareStatement(sql, university_id, building)) {
@@ -158,7 +291,7 @@ public class DB implements AutoCloseable {
         }
     }
 
-    public int AddDepartment(int university_id, DBObject.Department department) throws SQLException {
+    public int AddDepartment(int university_id, Department department) throws SQLException {
         String sql = "INSERT INTO department VALUES (?, DEFAULT, ?, ?, ?, ?) RETURNING id";
 
         try (PreparedStatement ps = PrepareStatement(sql, university_id, department)) {
@@ -168,7 +301,7 @@ public class DB implements AutoCloseable {
         }
     }
 
-    public int AddFaculty(int university_id, DBObject.Department department) throws SQLException {
+    public int AddFaculty(int university_id, Department department) throws SQLException {
         return RunAsTransaction(() -> {
             int department_id = AddDepartment(university_id, department);
 
@@ -180,7 +313,7 @@ public class DB implements AutoCloseable {
         });
     }
 
-    public int AddCathedra(int university_id, DBObject.Department department, int faculty_id) throws SQLException {
+    public int AddCathedra(int university_id, Department department, int faculty_id) throws SQLException {
         return RunAsTransaction(() -> {
             int department_id = AddDepartment(university_id, department);
 
@@ -209,8 +342,8 @@ public class DB implements AutoCloseable {
 
     public void AddSpecialtyForFaculty(int university_id,
                                        int faculty_id,
-                                       DBObject.Specialty specialty,
-                                       DBObject.SpecialtyAtUniversity specailty_at_university)
+                                       Specialty specialty,
+                                       SpecialtyAtUniversity specailty_at_university)
             throws SQLException
     {
         RunAsTransaction(() -> {
@@ -243,7 +376,7 @@ public class DB implements AutoCloseable {
         });
     }
 
-    public int AddEmployee(int university_id, DBObject.Employee employee) throws SQLException {
+    public int AddEmployee(int university_id, Employee employee) throws SQLException {
         String sql_get_id = "SELECT next_employee_id FROM university WHERE id = " + university_id;
         int employee_id;
         try (Statement s = connection.createStatement()) {

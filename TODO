@@ -1,8 +1,8 @@
 --- Code:
 [x] abstract away preperation of statement
 [x] abstract away transaction
-[-] hide url, username and password
-[-] get rid of DBObject
+[x] hide url, username and password
+[x] get rid of DBObject
 
 --- Add interface
 [-] Separate addition of specialty and specialty for university
