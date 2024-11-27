@@ -39,7 +39,7 @@ public class Main {
         db.LocateDepartmentAtBuilding(uni_id, math_modelling_id, "Корпус 3");
 
         var specialty = new DataBase.Specialty("01.03.02",
-                "Прикоадная математика и информатика",
+                "Прикладная математика и информатика",
                 "Бакалавриат");
 
         db.AddSpecialtyForFaculty(uni_id, pmk_id, specialty,
@@ -69,9 +69,9 @@ public class Main {
         db.AddJob(uni_id, math_modelling_id, employee_id2, "Доцент каферды математического моделирования и вычислительной математики");
         db.AddJob(uni_id, pmk_id, employee_id3, "Преподаватель");
         db.AddJob(uni_id, pmk_id, employee_id4, "Декан факультета прикладной матетматики и кибернетики");
-        // UpdateHeadmaster(uni_id, pmk_id, employee_id4);
+        // db.UpdateHeadmaster(uni_id, pmk_id, employee_id4);
         db.AddJob(uni_id, admin_id, employee_id5, "Ректор Тверского Госудасртвенного университета");
-        // UpdateHeadmaster(uni_id, admin_id, employee_id5);
+        // db.UpdateHeadmaster(uni_id, admin_id, employee_id5);
 
         db.AddSubjectForEmployee(uni_id, employee_id1, "Математическая статистика");
         db.AddSubjectForEmployee(uni_id, employee_id2, "Алгебра");

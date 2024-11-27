@@ -3,11 +3,22 @@
 [x] abstract away transaction
 [x] hide url, username and password
 [x] get rid of DBObject
+[-] make database objects derived from abstract class
+[-] jdbcTemplate
+
+--- Database:
+[-] make department.id to be single primary key or make separate sequence for it
+[-] fix: cathedra can be located in a building where it's faculty is not
+[x] views...
+[-] ids for buildings
+[x] common field names
+[-] subject table is redundant (could be useful only with id or for checking foreign key constraints)
+[-] domain for study_form
 
 --- Add interface
 [-] Separate addition of specialty and specialty for university
 [-] Separate addition of subjects and professors and hours
-[-] Merge some additions into nicer interface (e.g. sperated above)
+[-] Merge some additions into nicer interface (e.g. separated above)
 
 --- Select interface
 
