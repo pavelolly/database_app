@@ -21,6 +21,9 @@ dependencies {
     implementation(files("external/Raylib-J-0.5.2.jar"))
 
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
+
+    implementation("info.picocli:picocli:4.7.6")
+    annotationProcessor("info.picocli:picocli-codegen:4.7.6")
 }
 
 tasks.test {

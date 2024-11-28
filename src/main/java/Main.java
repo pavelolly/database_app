@@ -80,13 +80,23 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        try (var db = new DataBase()) {
+        CLI cli = new CLI();
 
-            db.TruncateEverything();
-            AddTverSU(db);
+        main_loop: while (true) {
+            CLI.Command cli_command = cli.GetCommand();
 
-        } catch (SQLException e) {
-            DataBase.PrintSQLExecption(e);
+            try {
+                switch (cli_command.GetCommand()) {
+                    case "quit", "q", "exit" -> {
+                        break main_loop;
+                    }
+                    default -> {
+                        throw new CLI.InvalidCommandError("Unknown command", cli_command.GetCommandToken());
+                    }
+                }
+            } catch (CLI.CLIError e) {
+                e.PrintForCommand(cli_command.GetCommand());
+            }
         }
     }
 }

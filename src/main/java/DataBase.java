@@ -154,8 +154,21 @@ public class DataBase implements AutoCloseable {
     // ------------- Print -------------
 
     public static void PrintSQLExecption(SQLException e) {
-        System.err.println("[SQL ERROR] " + e.getMessage());
-        e.printStackTrace();
+        System.err.println("[SQL ERROR]");
+        // Stolen from JDBCTutorial by Oracle
+        while (e != null) {
+            System.err.println("    SQLState: " + e.getSQLState());
+            System.err.println("    Error Code: " + e.getErrorCode());
+            System.err.println("    Message: " + e.getMessage());
+            Throwable t = e.getCause();
+            while (t != null) {
+                System.out.println("    Cause: " + t);
+                t = t.getCause();
+            }
+            System.err.println();
+            e = e.getNextException();
+        }
+        // e.printStackTrace();
     }
 
     private static void PrintSQL(String sql) {
