@@ -6,21 +6,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.ToString;
 import tuples.Triple;
 
 public class DataBase implements AutoCloseable {
-    private final Connection connection;
+    private static Connection connection = null;
 
     public DataBase() throws SQLException {
-        Dotenv dotenv = Dotenv.load();
-        String DB_URL = dotenv.get("DB_URL");
-        String USER   = dotenv.get("USER");
-        String PASS   = dotenv.get("PASS");
-        connection = DriverManager.getConnection(DB_URL, USER, PASS);
+        if (connection == null) {
+            Dotenv dotenv = Dotenv.load();
+            String DB_URL = dotenv.get("DB_URL");
+            String USER   = dotenv.get("USER");
+            String PASS   = dotenv.get("PASS");
+            connection = DriverManager.getConnection(DB_URL, USER, PASS);
+        }
     }
 
     public void close() {
@@ -29,6 +30,7 @@ public class DataBase implements AutoCloseable {
         } catch (SQLException e) {
             PrintSQLExecption(e);
         }
+        connection = null;
     }
 
     // ------------- Objects -------------
