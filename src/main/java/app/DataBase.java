@@ -1,9 +1,12 @@
+package app;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.ToString;
@@ -169,6 +172,12 @@ public class DataBase implements AutoCloseable {
             e = e.getNextException();
         }
         // e.printStackTrace();
+    }
+
+    public static void PrintIdNameMap(Map<Integer, String> map) {
+        for (Map.Entry<Integer, String> entry : map.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
     }
 
     private static void PrintSQL(String sql) {

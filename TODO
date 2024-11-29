@@ -5,6 +5,7 @@
 [x] get rid of DBObject
 [-] make database objects derived from abstract class
 [-] jdbcTemplate
+[-] CLIException.Print()
 
 --- Database:
 [-] make department.id to be single primary key or make separate sequence for it

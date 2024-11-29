@@ -1,4 +1,17 @@
+package app;
+
+import cli.Parser;
+import cli.commands.Show;
+import cli.exceptions.CLIException;
+import cli.exceptions.InvalidCommandException;
+
+import picocli.CommandLine;
+import picocli.CommandLine.IExecutionExceptionHandler;
+import picocli.CommandLine.ParseResult;
+
+import javax.xml.crypto.Data;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 public class Main {
     public static void PrintInfo(String msg) {
@@ -80,23 +93,54 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        CLI cli = new CLI();
-
-        main_loop: while (true) {
-            CLI.Command cli_command = cli.GetCommand();
-
-            try {
-                switch (cli_command.GetCommand()) {
-                    case "quit", "q", "exit" -> {
-                        break main_loop;
-                    }
-                    default -> {
-                        throw new CLI.InvalidCommandError("Unknown command", cli_command.GetCommandToken());
-                    }
+        Scanner scanner = new Scanner(System.in);
+        Parser parser = new Parser();
+        var sql_handler = new IExecutionExceptionHandler() {
+            @Override
+            public int handleExecutionException(Exception e,
+                                                CommandLine commandLine,
+                                                ParseResult parseResult)
+                    throws Exception
+            {
+                if (e instanceof SQLException ex) {
+                    DataBase.PrintSQLExecption(ex);
+                    return 0;
                 }
-            } catch (CLI.CLIError e) {
-                e.PrintForCommand(cli_command.GetCommand());
+                throw e;
             }
+        };
+
+        try (DataBase db = new DataBase()) {
+            var show_cmd = new CommandLine(new Show(db)).setExecutionExceptionHandler(sql_handler);
+
+            main_loop: while (true) {
+                System.out.print(">>> ");
+                String input = scanner.nextLine();
+                try {
+                    Parser.ParsedCommand command = parser.Parse(input);
+                    if (command.Empty()) {
+                        continue;
+                    }
+
+                    switch (command.GetCommand()) {
+                        case "quit", "q", "exit" -> {
+                            break main_loop;
+                        }
+                        case "show" -> {
+                            show_cmd.execute(command.GetCommandParams().toArray(new String[0]));
+                        }
+                        case null, default -> {
+                            throw new InvalidCommandException("Unknown command",
+                                    command.GetRaw(),
+                                    command.GetCommandPosition());
+                        }
+                    }
+                } catch (CLIException e) {
+                    e.Print();
+                }
+            }
+        } catch (SQLException e) {
+            DataBase.PrintSQLExecption(e);
         }
     }
 }
