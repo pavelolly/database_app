@@ -9,7 +9,6 @@ import picocli.CommandLine;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.ParseResult;
 
-import javax.xml.crypto.Data;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -98,13 +97,18 @@ public class Main {
         var sql_handler = new IExecutionExceptionHandler() {
             @Override
             public int handleExecutionException(Exception e,
-                                                CommandLine commandLine,
+                                                CommandLine cmd,
                                                 ParseResult parseResult)
                     throws Exception
             {
                 if (e instanceof SQLException ex) {
                     DataBase.PrintSQLExecption(ex);
-                    return 0;
+
+                    // propagating exit code
+                    // stolen from https://picocli.info/#_handling_errors
+                    return cmd.getExitCodeExceptionMapper() != null
+                            ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+                            : cmd.getCommandSpec().exitCodeOnExecutionException();
                 }
                 throw e;
             }
