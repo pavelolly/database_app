@@ -1,7 +1,7 @@
 package app;
 
 import cli.Parser;
-import cli.commands.Show;
+import cli.commands.*;
 import cli.exceptions.CLIException;
 import cli.exceptions.InvalidCommandException;
 
@@ -85,15 +85,15 @@ public class Main {
         db.AddJob(uni_id, admin_id, employee_id5, "Ректор Тверского Госудасртвенного университета");
         // db.UpdateHeadmaster(uni_id, admin_id, employee_id5);
 
-        db.AddSubjectForEmployee(uni_id, employee_id1, "Математическая статистика");
-        db.AddSubjectForEmployee(uni_id, employee_id2, "Алгебра");
-        db.AddSubjectForEmployee(uni_id, employee_id2, "Математический анализ");
-        db.AddSubjectForEmployee(uni_id, employee_id3, "Численные методы");
+        db.AddProfessor(uni_id, employee_id1, "Математическая статистика");
+        db.AddProfessor(uni_id, employee_id2, "Алгебра");
+        db.AddProfessor(uni_id, employee_id2, "Математический анализ");
+        db.AddProfessor(uni_id, employee_id3, "Численные методы");
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Parser parser = new Parser();
+        Parser parser   = new Parser();
         var sql_handler = new IExecutionExceptionHandler() {
             @Override
             public int handleExecutionException(Exception e,
@@ -104,7 +104,7 @@ public class Main {
                 if (e instanceof SQLException ex) {
                     DataBase.PrintSQLExecption(ex);
 
-                    // propagating exit code
+                    // propagating exit code (is that what it is?)
                     // stolen from https://picocli.info/#_handling_errors
                     return cmd.getExitCodeExceptionMapper() != null
                             ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
@@ -115,7 +115,11 @@ public class Main {
         };
 
         try (DataBase db = new DataBase()) {
-            var show_cmd = new CommandLine(new Show(db)).setExecutionExceptionHandler(sql_handler);
+            var show_cmd   = new CommandLine(new Show(db)  ).setExecutionExceptionHandler(sql_handler);
+            var update_cmd = new CommandLine(new Update(db)).setExecutionExceptionHandler(sql_handler);
+            var find_cmd   = new CommandLine(new Find(db)  ).setExecutionExceptionHandler(sql_handler);
+            var delete_cmd = new CommandLine(new Delete(db)).setExecutionExceptionHandler(sql_handler);
+            var add_cmd    = new CommandLine(new Add(db)   ).setExecutionExceptionHandler(sql_handler);
 
             main_loop: while (true) {
                 System.out.print(">>> ");
@@ -126,12 +130,23 @@ public class Main {
                         continue;
                     }
 
+                    String[] params = command.GetCommandParams().toArray(new String[0]);
+
                     switch (command.GetCommand()) {
-                        case "quit", "q", "exit" -> {
+                        case "quit", "q", "exit", "ex" -> {
                             break main_loop;
                         }
                         case "show" -> {
-                            show_cmd.execute(command.GetCommandParams().toArray(new String[0]));
+                            show_cmd.execute(params);
+                        }
+                        case "update" -> {
+                            update_cmd.execute(params);
+                        }
+                        case "find" -> {
+                            find_cmd.execute(params);
+                        }
+                        case "delete" -> {
+                            delete_cmd.execute(params);
                         }
                         case null, default -> {
                             throw new InvalidCommandException("Unknown command",

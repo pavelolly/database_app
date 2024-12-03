@@ -192,14 +192,9 @@ public class DataBase implements AutoCloseable {
 
     // ------------- Execute Wrappers -------------
 
-    private boolean Execute(Statement s, String sql) throws SQLException {
+    private void ExecuteUpdate(Statement s, String sql) throws SQLException {
         PrintSQL(sql);
-        return s.execute(sql);
-    }
-
-    private int ExecuteUpdate(Statement s, String sql) throws SQLException {
-        PrintSQL(sql);
-        return s.executeUpdate(sql);
+        s.executeUpdate(sql);
     }
 
     private ResultSet ExecuteQuery(Statement s, String sql) throws SQLException {
@@ -207,14 +202,9 @@ public class DataBase implements AutoCloseable {
         return s.executeQuery(sql);
     }
 
-    private boolean Execute(PreparedStatement ps) throws SQLException {
+    private void ExecuteUpdate(PreparedStatement ps) throws SQLException {
         PrintSQL(ps);
-        return ps.execute();
-    }
-
-    private int ExecuteUpdate(PreparedStatement ps) throws SQLException {
-        PrintSQL(ps);
-        return ps.executeUpdate();
+        ps.executeUpdate();
     }
 
     private ResultSet ExecuteQuery(PreparedStatement ps) throws SQLException {
@@ -440,7 +430,7 @@ public class DataBase implements AutoCloseable {
         }
     }
 
-    public void AddSubjectForEmployee(int university_id, int employee_id, String subject_name) throws SQLException {
+    public void AddProfessor(int university_id, int employee_id, String subject_name) throws SQLException {
         RunAsTransaction(() -> {
             String sql1 = "INSERT INTO subject VALUES (?) ON CONFLICT ON CONSTRAINT subject_pkey DO NOTHING";
             try (PreparedStatement ps = PrepareStatement(sql1, subject_name)) {
@@ -588,8 +578,36 @@ public class DataBase implements AutoCloseable {
         }
     }
 
+    public List<Building> GetBuildings(int university_id, int department_id) throws SQLException {
+        String sql = "SELECT building_name, address " +
+                "FROM building INNER JOIN location " +
+                "USING (university_id, building_name)" +
+                "WHERE university_id = " + university_id + " AND department_id = " + department_id;
+
+        try (Statement s = connection.createStatement()) {
+            ResultSet rs = ExecuteQuery(s, sql);
+
+            var buildings = new ArrayList<Building>();
+            while (rs.next()) {
+                buildings.add(new Building(rs.getString("building_name"), rs.getString("address")));
+            }
+            return buildings;
+        }
+    }
+
+    public Building GetBuildingInfo(int university_id, String building_name) throws SQLException {
+        String sql = "SELECT name, address FROM building WHERE university_id = ? AND name = ?";
+
+        try (PreparedStatement ps = PrepareStatement(sql, university_id, building_name)) {
+            ResultSet rs = ExecuteQuery(ps);
+
+            rs.next();
+            return new Building(rs.getString("name"), rs.getString("address"));
+        }
+    }
+
     public Map<Building, String> GetHeadOffice(int university_id, int department_id) throws SQLException {
-        String sql = "SELECT name, address, head_office " +
+        String sql = "SELECT building_name, address, head_office " +
                 "FROM building INNER JOIN location " +
                 "USING (university_id, building_name) " +
                 "WHERE university_id = ? AND department_id = ? AND head_office != NULL";
@@ -603,26 +621,6 @@ public class DataBase implements AutoCloseable {
                         rs.getString("head_office"));
             }
             return map;
-        }
-    }
-
-    public Map<Building, String> GetBuildings(int university_id, int department_id) throws SQLException {
-        String sql = "SELECT building_name, address, head_office " +
-                "FROM building INNER JOIN location " +
-                "USING (university_id, building_name)" +
-                "WHERE university_id = " + university_id + " AND department_id = " + department_id;
-
-        try (Statement s = connection.createStatement()) {
-            ResultSet rs = ExecuteQuery(s, sql);
-
-            var buildings = new HashMap<Building, String>();
-            while (rs.next()) {
-                buildings.put(
-                        new Building(rs.getString("building_name"),
-                                rs.getString("address")),
-                        rs.getString("head_office"));
-            }
-            return buildings;
         }
     }
 
@@ -700,7 +698,7 @@ public class DataBase implements AutoCloseable {
         }
     }
 
-    public Specialty GetSpeaciltyInfo(String code) throws SQLException {
+    public Specialty GetSpecialtyInfo(String code) throws SQLException {
         String sql = "SELECT name, qualification FROM specailty WHERE code = ?";
 
         try (PreparedStatement ps = PrepareStatement(sql, code)) {
@@ -757,27 +755,7 @@ public class DataBase implements AutoCloseable {
         }
     }
 
-    public Map<Integer, Employee> GetProfessors(int university_id, String subject_name) throws SQLException {
-        String sql = "SELECT employee_id, first_name, last_name, patronymic " +
-                "FROM professor INNER JOIN employee " +
-                "USING (university_id, employee_id) " +
-                "WHERE subject_name = ?";
-
-        try (PreparedStatement ps = PrepareStatement(sql, university_id, subject_name)) {
-            ResultSet rs = ExecuteQuery(ps);
-
-            var map = new HashMap<Integer, Employee>();
-            while (rs.next()) {
-                map.put(rs.getInt("employee_id"),
-                        new Employee(rs.getString("first_name")).
-                                LastName(rs.getString("last_name")).
-                                Patronymic(rs.getString("patronymic")));
-            }
-            return map;
-        }
-    }
-
-    public Employee GetEmployee(int university_id, int employee_id) throws SQLException {
+    public Employee GetEmployeeInfo(int university_id, int employee_id) throws SQLException {
         String sql = "SELECT first_name, last_name, patronymic " +
                 "FROM employee WHERE university_id = ? AND employee_id = ?";
 
@@ -812,6 +790,26 @@ public class DataBase implements AutoCloseable {
                 "WHERE university_id = ? AND department_id = ?";
 
         try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id)) {
+            ResultSet rs = ExecuteQuery(ps);
+
+            var map = new HashMap<Integer, Employee>();
+            while (rs.next()) {
+                map.put(rs.getInt("employee_id"),
+                        new Employee(rs.getString("first_name")).
+                                LastName(rs.getString("last_name")).
+                                Patronymic(rs.getString("patronymic")));
+            }
+            return map;
+        }
+    }
+
+    public Map<Integer, Employee> GetProfessors(int university_id, String subject_name) throws SQLException {
+        String sql = "SELECT employee_id, first_name, last_name, patronymic " +
+                "FROM professor INNER JOIN employee " +
+                "USING (university_id, employee_id) " +
+                "WHERE subject_name = ?";
+
+        try (PreparedStatement ps = PrepareStatement(sql, university_id, subject_name)) {
             ResultSet rs = ExecuteQuery(ps);
 
             var map = new HashMap<Integer, Employee>();

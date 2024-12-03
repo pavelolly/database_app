@@ -43,3 +43,7 @@ bin/
 
 ### Environment ###
 .env
+
+### wtf ###
+.swp
+.swo

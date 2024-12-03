@@ -6,8 +6,8 @@
 [-] make database objects derived from abstract class
 [-] jdbcTemplate
 [x] CLIException.Print()
-[-] Custom handlers for commands errors
-
+[-] custom handlers for commands errors
+[-] proper handling of empty ResultSet
 
 --- Database:
 [-] make department.id to be single primary key or make separate sequence for it
@@ -19,9 +19,9 @@
 [-] domain for study_form
 
 --- Add interface
-[-] Separate addition of specialty and specialty for university
-[-] Separate addition of subjects and professors and hours
-[-] Merge some additions into nicer interface (e.g. separated above)
+[-] separate addition of specialty and specialty for university
+[-] separate addition of subjects and professors and hours
+[-] merge some additions into nicer interface (e.g. separated above)
 
 --- Select interface
 
