@@ -17,6 +17,10 @@
 [x] common field names
 [-] subject table is redundant (could be useful only with id or for checking foreign key constraints)
 [-] domain for study_form
+[x] get employees of university
+[-] people who work on cathedras should also work on faculty
+[-] update to null
+[-] update name properly
 
 --- Add interface
 [-] separate addition of specialty and specialty for university

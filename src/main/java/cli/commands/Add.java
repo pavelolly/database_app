@@ -13,7 +13,9 @@ import java.util.concurrent.Callable;
                          Add.Locate.class,
                          Add.Specialty.class,
                          Add.Subject.class,
-                         Add.Employee.class })
+                         Add.Employee.class,
+                         Add.Job.class,
+                         Add.Professor.class })
 public class Add extends AbstractCommand {
     public Add(DataBase db) {
         super(db);
@@ -71,7 +73,7 @@ public class Add extends AbstractCommand {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
 
-        @Option(names = { "-n", "--name" })
+        @Option(names = { "-n", "--name" }, required = true)
         private String name;
 
         @Option(names = { "--url" })
@@ -227,7 +229,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "employee", subcommands = { Employee.Job.class, Employee.Professor.class })
+    @Command(name = "employee")
     public static class Employee implements Callable<Integer> {
 
         @Option(names = { "-u", "--university" }, required = true)
@@ -252,45 +254,45 @@ public class Add extends AbstractCommand {
 
             return 0;
         }
+    }
 
-        @Command(name = "job")
-        public static class Job implements Callable<Integer> {
-            @Option(names = { "-u", "--university" }, required = true)
-            private Integer university_id;
+    @Command(name = "job")
+    public static class Job implements Callable<Integer> {
+        @Option(names = { "-u", "--university" }, required = true)
+        private Integer university_id;
 
-            @Option(names = { "-d", "--department" }, required = true)
-            private Integer department_id;
+        @Option(names = { "-d", "--department" }, required = true)
+        private Integer department_id;
 
-            @Option(names = { "-e", "--employee" }, required = true)
-            private Integer employee_id;
+        @Option(names = { "-e", "--employee" }, required = true)
+        private Integer employee_id;
 
-            @Option(names = { "-j", "--job" }, required = true)
-            private String job_name;
+        @Option(names = { "-j", "--job" }, required = true)
+        private String job_name;
 
-            @Override
-            public Integer call() throws SQLException {
-                db.AddJob(university_id, department_id, employee_id, job_name);
-                return 0;
-            }
+        @Override
+        public Integer call() throws SQLException {
+            db.AddJob(university_id, department_id, employee_id, job_name);
+            return 0;
         }
+    }
 
-        @Command(name = "professor")
-        public static class Professor implements Callable<Integer> {
+    @Command(name = "professor")
+    public static class Professor implements Callable<Integer> {
 
-            @Option(names = { "-u", "--university" }, required = true)
-            private Integer university_id;
+        @Option(names = { "-u", "--university" }, required = true)
+        private Integer university_id;
 
-            @Option(names = { "-e", "--employee" }, required = true)
-            private Integer employee_id;
+        @Option(names = { "-e", "--employee" }, required = true)
+        private Integer employee_id;
 
-            @Option(names = { "-s", "--subject" }, required = true)
-            private String subject_name;
+        @Option(names = { "-s", "--subject" }, required = true)
+        private String subject_name;
 
-            @Override
-            public Integer call() throws SQLException {
-                db.AddProfessor(university_id, employee_id, subject_name);
-                return 0;
-            }
+        @Override
+        public Integer call() throws SQLException {
+            db.AddProfessor(university_id, employee_id, subject_name);
+            return 0;
         }
     }
 }

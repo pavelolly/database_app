@@ -12,16 +12,20 @@ import java.util.concurrent.Callable;
                          Delete.Building.class,
                          Delete.Employee.class,
                          Delete.Specialty.class,
-                         Delete.Subject.class })
-public class Delete extends AbstractCommand implements Callable<Integer> {
+                         Delete.Subject.class,
+                         Delete.Truncate.class })
+public class Delete extends AbstractCommand {
     public Delete(DataBase db) {
         super(db);
     }
 
-    @Override
-    public Integer call() throws SQLException {
-        db.TruncateEverything();
-        return 0;
+    @Command(name = "truncate")
+    public static class Truncate implements Callable<Integer> {
+        @Override
+        public Integer call() throws SQLException {
+            db.TruncateEverything();
+            return 0;
+        }
     }
 
     @Command(name = "university")
@@ -89,10 +93,10 @@ public class Delete extends AbstractCommand implements Callable<Integer> {
             @Option(names = { "-j", "--job" }, required = true)
             private String job_name;
 
-            @Option(names = { "-", "--subject" }, required = true)
+            @Option(names = { "-s", "--subject" }, required = true)
             private String subject;
 
-            @Option(names = { "-", "--professor" }, required = true)
+            @Option(names = { "-p", "--professor" }, required = true)
             private Boolean professor;
         }
 

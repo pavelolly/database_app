@@ -10,6 +10,7 @@ import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.ParseResult;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -114,7 +115,7 @@ public class Main {
             }
         };
 
-        try (DataBase db = new DataBase()) {
+        try (var db = new DataBase()) {
             var show_cmd   = new CommandLine(new Show(db)  ).setExecutionExceptionHandler(sql_handler);
             var update_cmd = new CommandLine(new Update(db)).setExecutionExceptionHandler(sql_handler);
             var find_cmd   = new CommandLine(new Find(db)  ).setExecutionExceptionHandler(sql_handler);
@@ -122,7 +123,7 @@ public class Main {
             var add_cmd    = new CommandLine(new Add(db)   ).setExecutionExceptionHandler(sql_handler);
 
             main_loop: while (true) {
-                System.out.print(">>> ");
+                System.out.print("\n>>> ");
                 String input = scanner.nextLine();
                 try {
                     Parser.ParsedCommand command = parser.Parse(input);
@@ -136,23 +137,14 @@ public class Main {
                         case "quit", "q", "exit", "ex" -> {
                             break main_loop;
                         }
-                        case "show" -> {
-                            show_cmd.execute(params);
-                        }
-                        case "update" -> {
-                            update_cmd.execute(params);
-                        }
-                        case "find" -> {
-                            find_cmd.execute(params);
-                        }
-                        case "delete" -> {
-                            delete_cmd.execute(params);
-                        }
-                        case null, default -> {
-                            throw new InvalidCommandException("Unknown command",
-                                    command.GetRaw(),
-                                    command.GetCommandPosition());
-                        }
+                        case "show"   -> show_cmd.execute(params);
+                        case "update" -> update_cmd.execute(params);
+                        case "find"   -> find_cmd.execute(params);
+                        case "delete" -> delete_cmd.execute(params);
+                        case "add"    -> add_cmd.execute(params);
+                        case null, default -> throw new InvalidCommandException("Unknown command",
+                                command.GetRaw(),
+                                command.GetCommandPosition());
                     }
                 } catch (CLIException e) {
                     e.Print();

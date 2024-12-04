@@ -73,7 +73,7 @@ public class Show extends AbstractCommand {
             public Boolean faculty;
 
             @Option(names = { "-c", "--cathedra" }, required = true)
-            public Integer cathedra_id;
+            public Integer faculty_id;
 
             @Option(names = { "-b", "--building" }, required = true)
             public String building_name;
@@ -105,8 +105,8 @@ public class Show extends AbstractCommand {
 
                 return 0;
             }
-            if (exclusive.cathedra_id != null) {
-                Map<Integer, String> cathedras = db.GetCathedras(university_id, exclusive.cathedra_id);
+            if (exclusive.faculty_id != null) {
+                Map<Integer, String> cathedras = db.GetCathedras(university_id, exclusive.faculty_id);
                 DataBase.PrintIdNameMap(cathedras);
 
                 return 0;
@@ -216,7 +216,7 @@ public class Show extends AbstractCommand {
 
             @Override
             public Integer call() throws SQLException {
-                if (subjects) {
+                if (subjects == null) {
                     List<DataBase.SpecialtyAtUniversity> specailties = db.GetSpecialtyAtUniversity(university_id, faculty_id, specialty_code);
                     for (var specailty : specailties) {
                         System.out.println(specailty);
@@ -240,7 +240,7 @@ public class Show extends AbstractCommand {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
 
-        @ArgGroup(multiplicity = "1")
+        @ArgGroup
         ExclusiveGroup exclusive;
 
         private static class ExclusiveGroup {
@@ -259,6 +259,14 @@ public class Show extends AbstractCommand {
 
         @Override
         public Integer call() throws SQLException {
+            if (exclusive == null) {
+                Map<Integer, DataBase.Employee> employees = db.GetEmployees(university_id);
+                for (var employee : employees.entrySet()) {
+                    System.out.println(employee.getKey() + ": " + employee.getValue());
+                }
+                return 0;
+            }
+
             if (exclusive.employee_id_name != null) {
                 DataBase.Employee employee = db.GetEmployeeInfo(university_id, exclusive.employee_id_name);
                 System.out.println(employee);
@@ -273,15 +281,15 @@ public class Show extends AbstractCommand {
             }
             if (exclusive.department_id != null) {
                 Map<Integer, DataBase.Employee> employees = db.GetEmployees(university_id, exclusive.department_id);
-                for (var employee : employees.values()) {
-                    System.out.println(employee);
+                for (var employee : employees.entrySet()) {
+                    System.out.println(employee.getKey() + ": " + employee.getValue());
                 }
                 return 0;
             }
             if (exclusive.subject != null) {
                 Map<Integer, DataBase.Employee> professors = db.GetProfessors(university_id, exclusive.subject);
-                for (var professor : professors.values()) {
-                    System.out.println(professor);
+                for (var professor : professors.entrySet()) {
+                    System.out.println(professor.getKey() + ": " + professor.getValue());
                 }
                 return 0;
             }

@@ -134,7 +134,7 @@ public class Update extends AbstractCommand {
 
     @Command(name = "head-office")
     public static class HeadOffice implements Callable<Integer> {
-        @Option(names = { "-u", "--university" })
+        @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
 
         @Option(names = { "-d", "--department" }, required = true)
