@@ -26,8 +26,8 @@ public class Show extends AbstractCommand {
         ExclusiveGroup exclusive;
 
         private static class ExclusiveGroup {
-            @Option(names = { "-i", "--id" }, required = true)
-            private Integer id;
+            @Option(names = { "-u", "--university" }, required = true)
+            private Integer university_id;
 
             @Option(names = { "-s", "--specialty" }, required = true)
             private String specialty_code;
@@ -41,8 +41,8 @@ public class Show extends AbstractCommand {
                 return 0;
             }
 
-            if (exclusive.id != null) {
-                DataBase.University university = db.GetUniversityInfo(exclusive.id);
+            if (exclusive.university_id != null) {
+                DataBase.University university = db.GetUniversityInfo(exclusive.university_id);
                 System.out.println(university);
                 return 0;
             }
@@ -66,7 +66,7 @@ public class Show extends AbstractCommand {
         ExclusiveGroup exclusive;
 
         private static class ExclusiveGroup {
-            @Option(names = { "-i", "--id" }, required = true)
+            @Option(names = { "-d", "--department" }, required = true)
             public Integer department_id;
 
             @Option(names = { "-f", "--faculty" }, required = true)

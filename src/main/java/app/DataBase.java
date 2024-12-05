@@ -1004,11 +1004,29 @@ public class DataBase implements AutoCloseable {
         }
     }
 
-    public void UpdateEmployeeName(int university_id, int employee_id, Employee new_employee) throws SQLException {
-        String sql = "UPDATE employee SET first_name = ?, last_name = ?, patronymic = ? " +
+    public void UpdateEmployeeFirstName(int university_id, int employee_id, String new_first_name) throws SQLException {
+        String sql = "UPDATE employee SET first_name = ? " +
                 "WHERE university_id = ? AND employee_id = ?";
 
-        try (PreparedStatement ps = PrepareStatement(sql, new_employee, university_id, employee_id)) {
+        try (PreparedStatement ps = PrepareStatement(sql, new_first_name, university_id, employee_id)) {
+            ExecuteUpdate(ps);
+        }
+    }
+
+    public void UpdateEmployeeLastName(int university_id, int employee_id, String new_last_name) throws SQLException {
+        String sql = "UPDATE employee SET last_name = ? " +
+                "WHERE university_id = ? AND employee_id = ?";
+
+        try (PreparedStatement ps = PrepareStatement(sql, new_last_name, university_id, employee_id)) {
+            ExecuteUpdate(ps);
+        }
+    }
+
+    public void UpdateEmployeePatronymic(int university_id, int employee_id, String new_patronymic) throws SQLException {
+        String sql = "UPDATE employee SET patronymic = ?" +
+                "WHERE university_id = ? AND employee_id = ?";
+
+        try (PreparedStatement ps = PrepareStatement(sql, new_patronymic, university_id, employee_id)) {
             ExecuteUpdate(ps);
         }
     }

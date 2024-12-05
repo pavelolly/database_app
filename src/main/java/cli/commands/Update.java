@@ -22,8 +22,8 @@ public class Update extends AbstractCommand {
     public static class University implements Callable<Integer> {
         @Spec Model.CommandSpec spec;
 
-        @Option(names = { "-i","--id" }, required = true)
-        private Integer id;
+        @Option(names = { "-u", "--university" }, required = true)
+        private Integer university_id;
 
         @Option(names = { "-n", "--name" })
         private String name;
@@ -51,19 +51,19 @@ public class Update extends AbstractCommand {
         @Override
         public Integer call() throws SQLException, ParameterException {
             if (name != null) {
-                db.UpdateUniversityName(id, name);
+                db.UpdateUniversityName(university_id, name);
             }
             if (url != null) {
-                db.UpdateUniversityUrl(id, url);
+                db.UpdateUniversityUrl(university_id, url.isEmpty() ? null : url);
             }
             if (state_flag != null) {
-                db.UpdateUniversityStateFlag(id, ValidateFlag("--state", state_flag));
+                db.UpdateUniversityStateFlag(university_id, ValidateFlag("--state", state_flag));
             }
             if (campus_flag != null) {
-                db.UpdateUniversityCampusFlag(id, ValidateFlag("--campus", campus_flag));
+                db.UpdateUniversityCampusFlag(university_id, ValidateFlag("--campus", campus_flag));
             }
             if (military_flag != null) {
-                db.UpdateUniversityMilitaryFlag(id, ValidateFlag("--military", military_flag));
+                db.UpdateUniversityMilitaryFlag(university_id, ValidateFlag("--military", military_flag));
             }
 
             return 0;
@@ -98,7 +98,7 @@ public class Update extends AbstractCommand {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
 
-        @Option(names = { "-i", "--id" }, required = true)
+        @Option(names = { "-d", "--department" }, required = true)
         private Integer department_id;
 
         @Option(names = { "-n", "--name" })
@@ -111,7 +111,7 @@ public class Update extends AbstractCommand {
         private String email;
 
         @Option(names = { "-h", "--headmaster" })
-        private Integer headmster_id;
+        private Integer headmaster_id;
 
         @Override
         public Integer call() throws SQLException {
@@ -119,13 +119,13 @@ public class Update extends AbstractCommand {
                 db.UpdateDepartmentName(university_id, department_id, name);
             }
             if (url != null) {
-                db.UpdateDepartmentUrl(university_id, department_id, url);
+                db.UpdateDepartmentUrl(university_id, department_id, url.isEmpty() ? null : url);
             }
             if (email != null) {
-                db.UpdateDepartmentEmail(university_id, department_id, email);
+                db.UpdateDepartmentEmail(university_id, department_id, email.isEmpty() ? null : email);
             }
-            if (headmster_id != null) {
-                db.UpdateDepartmentHeadmasterId(university_id, department_id, headmster_id);
+            if (headmaster_id != null) {
+                db.UpdateDepartmentHeadmasterId(university_id, department_id, headmaster_id);
             }
 
             return 0;
@@ -148,7 +148,7 @@ public class Update extends AbstractCommand {
 
         @Override
         public Integer call() throws SQLException {
-            db.UpdateDepartmentHeadOffice(university_id, department_id, building_name, head_office_name);
+            db.UpdateDepartmentHeadOffice(university_id, department_id, building_name, head_office_name.isEmpty() ? null : head_office_name);
             return 0;
         }
     }
@@ -230,7 +230,7 @@ public class Update extends AbstractCommand {
         @Option(names = { "-e", "--employee" }, required = true)
         private Integer employee_id;
 
-        @Option(names = { "-f", "--first-name" }, required = true)
+        @Option(names = { "-f", "--first-name" })
         private String first_name;
 
         @Option(names = { "-l", "--last-name" })
@@ -241,10 +241,18 @@ public class Update extends AbstractCommand {
 
         @Override
         public Integer call() throws SQLException {
-            db.UpdateEmployeeName(university_id, employee_id,
-                    new DataBase.Employee(first_name).
-                            LastName(last_name).
-                            Patronymic(patronymic));
+            if (first_name != null) {
+                db.UpdateEmployeeFirstName(university_id, employee_id, first_name.isEmpty() ? null : first_name);
+            }
+
+            if (last_name != null) {
+                db.UpdateEmployeeLastName(university_id, employee_id, last_name.isEmpty() ? null : last_name);
+            }
+
+            if (patronymic != null) {
+                db.UpdateEmployeePatronymic(university_id, employee_id, patronymic.isEmpty() ? null : patronymic);
+            }
+
             return 0;
         }
     }

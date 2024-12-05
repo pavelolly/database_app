@@ -8,6 +8,7 @@
 [x] CLIException.Print()
 [-] custom handlers for commands errors
 [-] proper handling of empty ResultSet
+[-] common parameter names
 
 --- Database:
 [-] make department.id to be single primary key or make separate sequence for it
@@ -19,16 +20,16 @@
 [-] domain for study_form
 [x] get employees of university
 [-] people who work on cathedras should also work on faculty
-[-] update to null
-[-] update name properly
 
---- Add interface
+--- Add interface [x]
 [-] separate addition of specialty and specialty for university
 [-] separate addition of subjects and professors and hours
 [-] merge some additions into nicer interface (e.g. separated above)
 
---- Select interface
+--- Select interface [x]
 
---- Delete interface
+--- Delete interface [x]
 
---- Update interface
+--- Update interface [x]
+[x] update to null
+[x] update name properly

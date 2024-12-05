@@ -33,7 +33,7 @@ public class Add extends AbstractCommand {
         @Option(names = { "-n", "--name" }, required = true)
         private String name;
 
-        @Option(names = { "-u", "--url" })
+        @Option(names = { "--url" })
         private String url;
 
         @Option(names = { "-s", "--state" })
