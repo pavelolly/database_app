@@ -116,7 +116,7 @@ public class Main {
         };
 
         try (var db = new DataBase()) {
-            AddTverSU(db);
+            // AddTverSU(db);
 
             var show_cmd   = new CommandLine(new Show(db)  ).setExecutionExceptionHandler(sql_handler);
             var update_cmd = new CommandLine(new Update(db)).setExecutionExceptionHandler(sql_handler);
