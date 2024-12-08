@@ -6,7 +6,7 @@ import picocli.CommandLine.*;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
-@Command(name = "find",
+@Command(name = "find", mixinStandardHelpOptions = true,
         subcommands = { Find.University.class,
                         Find.Department.class,
                         Find.Building.class })
@@ -15,7 +15,7 @@ public class Find extends AbstractCommand {
         super(db);
     }
 
-    @Command(name = "university")
+    @Command(name = "university", mixinStandardHelpOptions = true)
     public static class University implements Callable<Integer> {
         @Option(names = { "-n", "--name" }, required = true)
         private String name;
@@ -29,7 +29,7 @@ public class Find extends AbstractCommand {
         }
     }
 
-    @Command(name = "department")
+    @Command(name = "department", mixinStandardHelpOptions = true)
     public static class Department implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -45,7 +45,7 @@ public class Find extends AbstractCommand {
         }
     }
 
-    @Command(name = "building")
+    @Command(name = "building", mixinStandardHelpOptions = true)
     public static class Building implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;

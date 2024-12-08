@@ -6,7 +6,7 @@ import picocli.CommandLine.*;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
-@Command(name = "delete",
+@Command(name = "delete", mixinStandardHelpOptions = true,
          subcommands = { Delete.University.class,
                          Delete.Department.class,
                          Delete.Building.class,
@@ -19,7 +19,7 @@ public class Delete extends AbstractCommand {
         super(db);
     }
 
-    @Command(name = "truncate")
+    @Command(name = "truncate", mixinStandardHelpOptions = true)
     public static class Truncate implements Callable<Integer> {
         @Override
         public Integer call() throws SQLException {
@@ -28,7 +28,7 @@ public class Delete extends AbstractCommand {
         }
     }
 
-    @Command(name = "university")
+    @Command(name = "university", mixinStandardHelpOptions = true)
     public static class University implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -40,7 +40,7 @@ public class Delete extends AbstractCommand {
         }
     }
 
-    @Command(name = "department")
+    @Command(name = "department", mixinStandardHelpOptions = true)
     public static class Department implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -55,7 +55,7 @@ public class Delete extends AbstractCommand {
         }
     }
 
-    @Command(name = "building")
+    @Command(name = "building", mixinStandardHelpOptions = true)
     public static class Building implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -78,7 +78,7 @@ public class Delete extends AbstractCommand {
         }
     }
 
-    @Command(name = "employee")
+    @Command(name = "employee", mixinStandardHelpOptions = true)
     public static class Employee implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -126,7 +126,7 @@ public class Delete extends AbstractCommand {
         }
     }
 
-    @Command(name = "specailty", subcommands = Specialty.At.class)
+    @Command(name = "specailty", mixinStandardHelpOptions = true, subcommands = Specialty.At.class)
     public static class Specialty implements Callable<Integer> {
         @Option(names = { "-c", "--code" }, required = true)
         private String code;
@@ -137,7 +137,7 @@ public class Delete extends AbstractCommand {
             return 0;
         }
 
-        @Command(name = "at")
+        @Command(name = "at", mixinStandardHelpOptions = true)
         public static class At implements Callable<Integer> {
             @Option(names = { "-c", "--code" }, required = true)
             private String code;
@@ -161,7 +161,7 @@ public class Delete extends AbstractCommand {
         }
     }
 
-    @Command(name = "subject")
+    @Command(name = "subject", mixinStandardHelpOptions = true)
     public static class Subject implements Callable<Integer> {
         @ArgGroup(multiplicity = "1")
         ExclusiveGroup exclusive;

@@ -6,7 +6,7 @@ import picocli.CommandLine.*;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
-@Command(name = "add",
+@Command(name = "add", mixinStandardHelpOptions = true,
          subcommands = { Add.University.class,
                          Add.Department.class,
                          Add.Building.class,
@@ -26,7 +26,7 @@ public class Add extends AbstractCommand {
     }
 
 
-    @Command(name = "university")
+    @Command(name = "university", mixinStandardHelpOptions = true)
     public static class University implements Callable<Integer> {
         @Spec Model.CommandSpec spec;
 
@@ -68,7 +68,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "department")
+    @Command(name = "department", mixinStandardHelpOptions = true)
     public static class Department implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -122,7 +122,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "building")
+    @Command(name = "building", mixinStandardHelpOptions = true)
     public static class Building implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -140,7 +140,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "locate")
+    @Command(name = "locate", mixinStandardHelpOptions = true)
     public static class Locate implements Callable<Integer> {
 
         @Option(names = { "-u", "--university" }, required = true)
@@ -152,7 +152,7 @@ public class Add extends AbstractCommand {
         @Option(names = { "-b", "--building" }, required = true)
         private String bulding_name;
 
-        @Option(names = { "-h", "--head-office" })
+        @Option(names = { "--head-office" })
         private String head_office;
 
         @Override
@@ -163,7 +163,7 @@ public class Add extends AbstractCommand {
     }
 
     // !!--------<<< THIS IS SO BAD >>>--------!!
-    @Command(name = "specialty")
+    @Command(name = "specialty", mixinStandardHelpOptions = true)
     public static class Specialty implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -202,7 +202,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "subject")
+    @Command(name = "subject", mixinStandardHelpOptions = true)
     public static class Subject implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -219,7 +219,7 @@ public class Add extends AbstractCommand {
         @Option(names = { "-s", "--subject" }, required = true)
         private String subject_name;
 
-        @Option(names = { "-h", "--hours" }, required = true)
+        @Option(names = { "--hours" }, required = true)
         private Integer hours;
 
         @Override
@@ -229,7 +229,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "employee")
+    @Command(name = "employee", mixinStandardHelpOptions = true)
     public static class Employee implements Callable<Integer> {
 
         @Option(names = { "-u", "--university" }, required = true)
@@ -256,7 +256,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "job")
+    @Command(name = "job", mixinStandardHelpOptions = true)
     public static class Job implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -277,7 +277,7 @@ public class Add extends AbstractCommand {
         }
     }
 
-    @Command(name = "professor")
+    @Command(name = "professor", mixinStandardHelpOptions = true)
     public static class Professor implements Callable<Integer> {
 
         @Option(names = { "-u", "--university" }, required = true)

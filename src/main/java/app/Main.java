@@ -82,9 +82,9 @@ public class Main {
         db.AddJob(uni_id, math_modelling_id, employee_id2, "Доцент каферды математического моделирования и вычислительной математики");
         db.AddJob(uni_id, pmk_id, employee_id3, "Преподаватель");
         db.AddJob(uni_id, pmk_id, employee_id4, "Декан факультета прикладной матетматики и кибернетики");
-        // db.UpdateHeadmaster(uni_id, pmk_id, employee_id4);
+        db.UpdateDepartmentHeadmasterId(uni_id, pmk_id, employee_id4);
         db.AddJob(uni_id, admin_id, employee_id5, "Ректор Тверского Госудасртвенного университета");
-        // db.UpdateHeadmaster(uni_id, admin_id, employee_id5);
+        db.UpdateDepartmentHeadmasterId(uni_id, admin_id, employee_id5);
 
         db.AddProfessor(uni_id, employee_id1, "Математическая статистика");
         db.AddProfessor(uni_id, employee_id2, "Алгебра");
@@ -116,6 +116,7 @@ public class Main {
         };
 
         try (var db = new DataBase()) {
+            // db.TruncateEverything();
             // AddTverSU(db);
 
             var show_cmd   = new CommandLine(new Show(db)  ).setExecutionExceptionHandler(sql_handler);

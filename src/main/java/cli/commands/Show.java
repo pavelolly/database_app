@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-@Command(name = "show",
+@Command(name = "show", mixinStandardHelpOptions = true,
          subcommands = { Show.University.class,
                          Show.Department.class,
                          Show.Building.class,
@@ -20,7 +20,7 @@ public class Show extends AbstractCommand {
         super(db);
     }
 
-    @Command(name = "university")
+    @Command(name = "university", mixinStandardHelpOptions = true)
     public static class University implements Callable<Integer> {
         @ArgGroup
         ExclusiveGroup exclusive;
@@ -57,7 +57,7 @@ public class Show extends AbstractCommand {
         }
     }
 
-    @Command(name = "department")
+    @Command(name = "department", mixinStandardHelpOptions = true)
     public static class Department implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -78,7 +78,7 @@ public class Show extends AbstractCommand {
             @Option(names = { "-b", "--building" }, required = true)
             public String building_name;
 
-            @Option(names = { "-h", "--head-office" }, required = true)
+            @Option(names = {  "--head-office" }, required = true)
             public Integer department_id_for_head_office;
 
             @Option(names = { "-s", "--specialty" }, required = true)
@@ -132,7 +132,7 @@ public class Show extends AbstractCommand {
         }
     }
 
-    @Command(name = "building")
+    @Command(name = "building", mixinStandardHelpOptions = true)
     public static class Building implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
@@ -157,7 +157,7 @@ public class Show extends AbstractCommand {
         }
     }
 
-    @Command(name = "specialty", subcommands = Specialty.At.class)
+    @Command(name = "specialty", mixinStandardHelpOptions = true, subcommands = Specialty.At.class)
     public static class Specialty implements Callable<Integer> {
         @ArgGroup
         ExclusiveGroup exclusive;
@@ -199,7 +199,7 @@ public class Show extends AbstractCommand {
             return 1;
         }
 
-        @Command(name = "at")
+        @Command(name = "at", mixinStandardHelpOptions = true)
         public static class At implements Callable<Integer> {
 
             @Option(names = { "-u", "--university" }, required = true)
@@ -235,7 +235,7 @@ public class Show extends AbstractCommand {
         }
     }
 
-    @Command(name = "employee")
+    @Command(name = "employee", mixinStandardHelpOptions = true)
     public static class Employee implements Callable<Integer> {
         @Option(names = { "-u", "--university" }, required = true)
         private Integer university_id;
