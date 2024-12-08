@@ -182,11 +182,15 @@ public class DataBase implements AutoCloseable {
         }
     }
 
-    private static void PrintSQL(String sql) {
+    public static void PrintInfo(String msg) {
+        System.out.println("[INFO] " + msg);
+    }
+
+    public static void PrintSQL(String sql) {
         System.out.println("[STATEMENT] " + sql + ";");
     }
 
-    private static void PrintSQL(PreparedStatement ps) {
+    public static void PrintSQL(PreparedStatement ps) {
         System.out.println("[STATEMENT] " + ps + ";");
     }
 
@@ -454,6 +458,25 @@ public class DataBase implements AutoCloseable {
         return map;
     }
 
+    private List<Building> ResultSetToBuildingList(ResultSet rs) throws SQLException {
+        var buildings = new ArrayList<Building>();
+        while (rs.next()) {
+            buildings.add(new Building(rs.getString("building_name"), rs.getString("address")));
+        }
+        return buildings;
+    }
+
+    private Map<Integer, Employee> ResultSetToIdEmployeeMap(ResultSet rs) throws SQLException {
+        var map = new HashMap<Integer, Employee>();
+        while (rs.next()) {
+            map.put(rs.getInt("employee_id"),
+                    new Employee(rs.getString("first_name")).
+                            LastName(rs.getString("last_name")).
+                            Patronymic(rs.getString("patronymic")));
+        }
+        return map;
+    }
+
     public Map<Integer, String> GetUniversities() throws SQLException {
         String sql = "SELECT university_id, name FROM university";
 
@@ -570,11 +593,7 @@ public class DataBase implements AutoCloseable {
         try (Statement s = connection.createStatement()) {
             ResultSet rs = ExecuteQuery(s, sql);
 
-            var buildings = new ArrayList<Building>();
-            while (rs.next()) {
-                buildings.add(new Building(rs.getString("building_name"), rs.getString("address")));
-            }
-            return buildings;
+            return ResultSetToBuildingList(rs);
         }
     }
 
@@ -587,11 +606,7 @@ public class DataBase implements AutoCloseable {
         try (Statement s = connection.createStatement()) {
             ResultSet rs = ExecuteQuery(s, sql);
 
-            var buildings = new ArrayList<Building>();
-            while (rs.next()) {
-                buildings.add(new Building(rs.getString("building_name"), rs.getString("address")));
-            }
-            return buildings;
+            return ResultSetToBuildingList(rs);
         }
     }
 
@@ -811,14 +826,7 @@ public class DataBase implements AutoCloseable {
         try (PreparedStatement ps = PrepareStatement(sql, university_id, department_id)) {
             ResultSet rs = ExecuteQuery(ps);
 
-            var map = new HashMap<Integer, Employee>();
-            while (rs.next()) {
-                map.put(rs.getInt("employee_id"),
-                        new Employee(rs.getString("first_name")).
-                                LastName(rs.getString("last_name")).
-                                Patronymic(rs.getString("patronymic")));
-            }
-            return map;
+            return ResultSetToIdEmployeeMap(rs);
         }
     }
 
@@ -831,14 +839,7 @@ public class DataBase implements AutoCloseable {
         try (PreparedStatement ps = PrepareStatement(sql, university_id, subject_name)) {
             ResultSet rs = ExecuteQuery(ps);
 
-            var map = new HashMap<Integer, Employee>();
-            while (rs.next()) {
-                map.put(rs.getInt("employee_id"),
-                        new Employee(rs.getString("first_name")).
-                                LastName(rs.getString("last_name")).
-                                Patronymic(rs.getString("patronymic")));
-            }
-            return map;
+            return ResultSetToIdEmployeeMap(rs);
         }
     }
 
@@ -862,46 +863,28 @@ public class DataBase implements AutoCloseable {
         Update(table, field, new_value, university_id, false);
     }
 
-    private void Update(String table, String field, Object new_value, int university_id, int department_id, boolean cascade)
+    private void UpdateDepartment(String field, Object new_value, int university_id, int department_id)
             throws SQLException
     {
-        String sql = "UPDATE " + table + " SET " + field + " = ? WHERE university_id = ? AND department_id = ?";
-        if (cascade) {
-            sql += " CASCADE";
-        }
+        String sql = "UPDATE department SET " + field + " = ? WHERE university_id = ? AND department_id = ?";
 
         try (PreparedStatement ps = PrepareStatement(sql, new_value, university_id, department_id)) {
             ExecuteUpdate(ps);
         }
     }
-    private void Update(String table, String field, Object new_value, int university_id, int department_id)
-            throws SQLException
-    {
-        Update(table, field, new_value, university_id, department_id, false);
-    }
 
-    private void Update(String table, String field, Object new_value,
-                        int university_id, int faculty_id, String specailty_code, String study_form,
-                        boolean cascade)
-            throws SQLException
+    private void UpdateSpecialty(String field, Object new_value,
+                        int university_id, int faculty_id, String specailty_code, String study_form)
+        throws SQLException
     {
-        String sql = "UPDATE " + table + " SET " + field + " = ? " +
+        String sql = "UPDATE specialty_at_university SET " + field + " = ? " +
                 "WHERE university_id = ? AND faculty_id = ? AND specailty_code = ? AND study_form = ?";
-        if (cascade) {
-            sql += " CASCADE";
-        }
 
         try (PreparedStatement ps = PrepareStatement(sql,
                 new_value, university_id, faculty_id, specailty_code, study_form))
         {
             ExecuteUpdate(ps);
         }
-    }
-    private void Update(String table, String field, Object new_value,
-                        int university_id, int faculty_id, String specailty_code, String study_form)
-        throws SQLException
-    {
-        Update(table, field, new_value, university_id, faculty_id, specailty_code, study_form, false);
     }
 
     public void UpdateUniversityName(int university_id, String new_name) throws SQLException {
@@ -933,19 +916,19 @@ public class DataBase implements AutoCloseable {
     }
 
     public void UpdateDepartmentName(int university_id, int department_id, String new_name) throws SQLException {
-        Update("department", "name", new_name, university_id, department_id);
+        UpdateDepartment("name", new_name, university_id, department_id);
     }
 
     public void UpdateDepartmentUrl(int university_id, int department_id, String new_url) throws SQLException {
-        Update("department", "url", new_url, university_id, department_id);
+        UpdateDepartment("url", new_url, university_id, department_id);
     }
 
     public void UpdateDepartmentEmail(int university_id, int department_id, String new_email) throws SQLException {
-        Update("department", "email", new_email, university_id, department_id);
+        UpdateDepartment("email", new_email, university_id, department_id);
     }
 
     public void UpdateDepartmentHeadmasterId(int university_id, int department_id, int new_headmster_id) throws SQLException {
-        Update("department", "headmaster_id", new_headmster_id, university_id, department_id);
+        UpdateDepartment("headmaster_id", new_headmster_id, university_id, department_id);
     }
 
     public void UpdateDepartmentHeadOffice(int university_id, int department_id, String building, String new_head_office)
@@ -970,7 +953,7 @@ public class DataBase implements AutoCloseable {
                                              int new_month_to_study)
             throws SQLException
     {
-        Update("specialty_at_university", "month_to_study", new_month_to_study,
+        UpdateSpecialty("month_to_study", new_month_to_study,
                 university_id, faculty_id, specailty_code, study_form);
     }
 
@@ -978,7 +961,7 @@ public class DataBase implements AutoCloseable {
                                           int new_free_places)
             throws SQLException
     {
-        Update("specialty_at_university", "number_of_free_places", new_free_places,
+        UpdateSpecialty("number_of_free_places", new_free_places,
                 university_id, faculty_id, specailty_code, study_form);
     }
 
@@ -986,7 +969,7 @@ public class DataBase implements AutoCloseable {
                                           int new_paid_places)
             throws SQLException
     {
-        Update("specialty_at_university", "number_of_paid_places", new_paid_places,
+        UpdateSpecialty("number_of_paid_places", new_paid_places,
                 university_id, faculty_id, specailty_code, study_form);
     }
 

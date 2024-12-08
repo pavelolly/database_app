@@ -22,9 +22,6 @@ public class Parser {
         public String GetValue() {
             return value;
         }
-        public int GetPos() {
-            return pos;
-        }
     }
 
     public static class ParsedCommand {
@@ -40,10 +37,6 @@ public class Parser {
             return raw_command;
         }
 
-        public List<String> GetFullCommand() {
-            return tokens.stream().map(Token::GetValue).toList();
-        }
-
         public List<String> GetCommandParams() {
             return tokens.subList(1, tokens.size()).
                     stream().map(Token::GetValue).
@@ -57,21 +50,8 @@ public class Parser {
             return null;
         }
 
-        public String GetSubcommand() {
-            if (tokens.size() > 1) {
-                return tokens.get(1).value;
-            }
-            return null;
-        }
-
         public int GetCommandPosition() throws IndexOutOfBoundsException {
             return tokens.getFirst().pos;
-        }
-        public int GetSubcommandPosition() throws IndexOutOfBoundsException {
-            return tokens.get(1).pos;
-        }
-        public int GetArgPosition(int index) throws IndexOutOfBoundsException {
-            return tokens.get(index + 2).pos;
         }
 
         public boolean Empty() {
